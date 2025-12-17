@@ -10,7 +10,13 @@ app = typer.Typer()
 queue = QueueManager()
 
 @app.command()
-def seed(city: str, keywords: str, lat: float = 51.5074, lng: float = -0.1278, width: float = 20000):
+def seed(
+    city: str = typer.Option(..., help="City name (for logging/reference)"),
+    keywords: str = typer.Option(..., help="Comma-separated keywords"),
+    lat: float = typer.Option(51.5074, help="Latitude of center"),
+    lng: float = typer.Option(-0.1278, help="Longitude of center"),
+    width: float = typer.Option(20000, help="Width of square in meters")
+):
     """
     Seeds the queue with initial tasks.
     Default lat/lng is London. width in meters (20km).
