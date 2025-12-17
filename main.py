@@ -1,31 +1,45 @@
 import typer
 import os
 import json
-from geo_utils import split_square # Or just logic to create initial square
+from geo_utils import split_square, get_city_info
 from queue_manager import QueueManager
 from exporter import export_to_excel, flush_database
 from models import init_db
+from typing import Optional
 
 app = typer.Typer()
 queue = QueueManager()
 
 @app.command()
-def seed(city: str, keywords: str, lat: float = 51.5074, lng: float = -0.1278, width: float = 20000):
+def seed(city: str, keywords: str, lat: Optional[float] = None, lng: Optional[float] = None, width: Optional[float] = None):
     """
     Seeds the queue with initial tasks.
-    Default lat/lng is London. width in meters (20km).
+    If lat/lng are not provided, tries to geocode the city.
+    If width is not provided, tries to estimate it from the city's bounding box or defaults to 20km.
     """
     init_db()
     print(f"Seeding for city: {city}, keywords: {keywords}")
 
-    # We create an initial task.
-    # We might need to geocode the city to get lat/lng if not provided,
-    # but for this CLI we accept lat/lng or default to London.
-    # The user example: seed --city "London" --keywords "gym"
+    # Determine lat/lng/width
+    if lat is None or lng is None:
+        print(f"Geocoding city: {city}...")
+        c_lat, c_lng, c_width = get_city_info(city)
 
-    # If the user meant for us to geocode "London", we would need a geocoding lib or API.
-    # For simplicity, we assume the user might provide lat/lng or we default to a known point.
-    # Let's use the provided default or arguments.
+        if c_lat is not None and c_lng is not None:
+            lat = lat if lat is not None else c_lat
+            lng = lng if lng is not None else c_lng
+            # If width was not provided by user, use the geocoded width
+            if width is None:
+                width = c_width
+            print(f"Geocoded: lat={lat}, lng={lng}, width={width:.0f}m")
+        else:
+            # Fallback if geocoding failed and user didn't provide lat/lng
+            if lat is None: lat = 51.5074 # Default London
+            if lng is None: lng = -0.1278 # Default London
+            print(f"Could not geocode '{city}'. Using defaults/provided: lat={lat}, lng={lng}")
+
+    if width is None:
+        width = 20000 # Default 20km if still None
 
     keyword_list = [k.strip() for k in keywords.split(",")]
 
