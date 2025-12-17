@@ -1,0 +1,9 @@
+sqlalchemy[asyncio]
+asyncpg
+psycopg2-binary
+pandas
+openpyxl
+redis
+aiohttp
+typer
+python-dotenv
