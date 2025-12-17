@@ -3,6 +3,8 @@ import os
 import json
 import logging
 import aiohttp
+import aiofiles
+import datetime
 from sqlalchemy.future import select
 from sqlalchemy.dialects.postgresql import insert
 from models import AsyncSessionLocal, Business
@@ -45,6 +47,24 @@ async def post_task(session, task_data):
             result = await response.json()
             if result.get('status_code') == 20000:
                 task_id = result['tasks'][0]['id']
+
+                # Log task_id locally
+                try:
+                    os.makedirs("/app/data", exist_ok=True)
+                    log_entry = {
+                        "task_id": task_id,
+                        "timestamp": datetime.datetime.utcnow().isoformat(),
+                        "keyword": task_data['keyword'],
+                        "lat": task_data['lat'],
+                        "lng": task_data['lng'],
+                        "width": task_data['width'],
+                        "zoom": zoom
+                    }
+                    async with aiofiles.open("/app/data/task_ids.jsonl", mode='a') as f:
+                        await f.write(json.dumps(log_entry) + "\n")
+                except Exception as log_err:
+                    logger.error(f"Failed to log task_id locally: {log_err}")
+
                 return task_id
             else:
                 logger.error(f"Error posting task: {result}")

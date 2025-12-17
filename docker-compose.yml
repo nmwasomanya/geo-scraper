@@ -35,6 +35,8 @@ services:
       REDIS_HOST: redis
       DATAFORSEO_LOGIN: ${DATAFORSEO_LOGIN}
       DATAFORSEO_PASSWORD: ${DATAFORSEO_PASSWORD}
+    volumes:
+      - ./data:/app/data
     depends_on:
       db:
         condition: service_healthy
@@ -50,6 +52,8 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: scraper_db
       REDIS_HOST: redis
+    volumes:
+      - ./data:/app/data
     depends_on:
       db:
         condition: service_healthy
