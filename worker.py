@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sys
 import json
 import logging
 import aiohttp
@@ -204,6 +205,16 @@ async def process_task(task, semaphore):
 
 async def worker_loop(worker_id):
     logger.info(f"Worker {worker_id} started.")
+    logger.info(f"Connected to Redis at {queue.host}:{queue.port}")
+
+    # Check for pending tasks on startup to assist with debugging
+    try:
+        pending_count = queue.r.llen(queue.pending_queue)
+        logger.info(f"Pending tasks in queue: {pending_count}")
+        if pending_count == 0:
+            logger.warning("Queue is empty! Run 'python main.py seed --city <CITY> --keywords <KEYWORDS>' to add tasks.")
+    except Exception as e:
+        logger.error(f"Could not check queue size: {e}")
 
     # Intra-worker concurrency limit
     MAX_CONCURRENT_TASKS = 10
@@ -247,5 +258,8 @@ async def worker_loop(worker_id):
                  logger.error(f"Janitor error: {e}")
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        logger.warning("worker.py does not accept arguments. Use 'python main.py seed' to add tasks to the queue.")
+
     w_id = os.getenv("HOSTNAME", "worker-0")
     asyncio.run(worker_loop(w_id))
