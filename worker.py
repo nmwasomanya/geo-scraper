@@ -28,7 +28,7 @@ async def post_task(session, task_data):
     """
     Posts a task to DataForSEO Google Maps Local Pack Task endpoint.
     """
-    url = f"{API_BASE}/google/maps/task_post"
+    url = f"{API_BASE}/serp/google/maps/task_post"
 
     radius_meters = calculate_circumscribed_radius(task_data['width'])
     zoom = calculate_zoom_level(radius_meters, task_data['lat'])
@@ -79,7 +79,7 @@ async def get_task_result(session, task_id):
     """
     Polls for the result of a task.
     """
-    url = f"{API_BASE}/google/maps/task_get/regular/{task_id}"
+    url = f"{API_BASE}/serp/google/maps/task_get/advanced/{task_id}"
     auth = aiohttp.BasicAuth(API_USERNAME, API_PASSWORD)
 
     # Poll loop
