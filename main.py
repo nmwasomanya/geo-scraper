@@ -21,22 +21,27 @@ def seed(city: str, keywords: str, lat: Optional[float] = None, lng: Optional[fl
     print(f"Seeding for city: {city}, keywords: {keywords}")
 
     # Determine lat/lng/width
-    if lat is None or lng is None:
+    c_lat, c_lng, c_width = None, None, None
+    if lat is None or lng is None or width is None:
         print(f"Geocoding city: {city}...")
         c_lat, c_lng, c_width = get_city_info(city)
 
-        if c_lat is not None and c_lng is not None:
-            lat = lat if lat is not None else c_lat
-            lng = lng if lng is not None else c_lng
-            # If width was not provided by user, use the geocoded width
-            if width is None:
-                width = c_width
-            print(f"Geocoded: lat={lat}, lng={lng}, width={width:.0f}m")
-        else:
-            # Fallback if geocoding failed and user didn't provide lat/lng
-            if lat is None: lat = 51.5074 # Default London
-            if lng is None: lng = -0.1278 # Default London
-            print(f"Could not geocode '{city}'. Using defaults/provided: lat={lat}, lng={lng}")
+    if c_lat is not None and c_lng is not None:
+        if lat is None:
+            lat = c_lat
+        if lng is None:
+            lng = c_lng
+        if width is None:
+            width = c_width
+        print(f"Geocoded information used where missing: lat={lat}, lng={lng}, width={width:.0f}m")
+
+    # Fallback if geocoding failed (or partly failed) and values are still missing
+    if lat is None:
+        lat = 51.5074 # Default London
+        print(f"Could not resolve latitude. Using default: {lat}")
+    if lng is None:
+        lng = -0.1278 # Default London
+        print(f"Could not resolve longitude. Using default: {lng}")
 
     if width is None:
         width = 20000 # Default 20km if still None
