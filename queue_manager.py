@@ -5,7 +5,7 @@ import os
 
 class QueueManager:
     def __init__(self, host=None, port=6379, db=0):
-        self.host = host or os.getenv("REDIS_HOST", "redis")
+        self.host = host or os.getenv("REDIS_HOST", "localhost")
         self.port = port
         self.db = db
         self.r = redis.Redis(host=self.host, port=self.port, db=self.db, decode_responses=True)
