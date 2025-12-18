@@ -16,8 +16,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] Work
 logger = logging.getLogger(__name__)
 
 # DataForSEO Credentials
-API_USERNAME = os.getenv("DATAFORSEO_LOGIN")
-API_PASSWORD = os.getenv("DATAFORSEO_PASSWORD")
+# To use hardcoded credentials, replace "REPLACE_WITH_YOUR_LOGIN" and "REPLACE_WITH_YOUR_PASSWORD"
+# with your actual login and password strings.
+API_USERNAME = os.getenv("DATAFORSEO_LOGIN", "REPLACE_WITH_YOUR_LOGIN")
+API_PASSWORD = os.getenv("DATAFORSEO_PASSWORD", "REPLACE_WITH_YOUR_PASSWORD")
 API_BASE = "https://api.dataforseo.com/v3"
 
 queue = QueueManager()
