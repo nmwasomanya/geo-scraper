@@ -1,4 +1,7 @@
 import math
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderServiceError
+from geopy.distance import geodesic
 
 def calculate_circumscribed_radius(width_meters: float) -> int:
     """
@@ -58,3 +61,50 @@ def split_square(lat: float, lng: float, width_meters: float):
     ]
 
     return sub_squares
+
+def get_city_info(city_name: str):
+    """
+    Geocodes a city name to get latitude, longitude, and an estimated width in meters
+    based on its bounding box.
+
+    Returns:
+        tuple: (lat, lng, width_meters) or (None, None, None) on failure.
+    """
+    geolocator = Nominatim(user_agent="city_scraper_cli")
+    try:
+        location = geolocator.geocode(city_name)
+        if location:
+            lat = location.latitude
+            lng = location.longitude
+
+            # Bounding box: [min_latitude, max_latitude, min_longitude, max_longitude]
+            raw = location.raw
+            boundingbox = raw.get('boundingbox')
+            width_meters = 20000.0 # Default fallback
+
+            if boundingbox:
+                 # Nominatim returns strings in the list
+                 min_lat = float(boundingbox[0])
+                 max_lat = float(boundingbox[1])
+                 min_lon = float(boundingbox[2])
+                 max_lon = float(boundingbox[3])
+
+                 # Width: distance between min_lon and max_lon at the center latitude
+                 # We use geodesic distance which is more accurate
+                 width_meters_lon = geodesic((lat, min_lon), (lat, max_lon)).meters
+
+                 # Height: distance between min_lat and max_lat at the center longitude
+                 height_meters_lat = geodesic((min_lat, lng), (max_lat, lng)).meters
+
+                 # We take the larger dimension to ensure coverage
+                 width_meters = max(width_meters_lon, height_meters_lat)
+
+            return lat, lng, width_meters
+    except (GeocoderTimedOut, GeocoderServiceError) as e:
+        print(f"Geocoding error: {e}")
+        return None, None, None
+    except Exception as e:
+        print(f"Unexpected error during geocoding: {e}")
+        return None, None, None
+
+    return None, None, None
