@@ -11,7 +11,13 @@ app = typer.Typer()
 queue = QueueManager()
 
 @app.command()
-def seed(city: str, keywords: str, lat: Optional[float] = None, lng: Optional[float] = None, width: Optional[float] = None):
+def seed(
+    city: str = typer.Option(..., help="The city name to seed."),
+    keywords: str = typer.Option(..., help="Comma-separated list of keywords."),
+    lat: Optional[float] = typer.Option(None, help="Latitude override."),
+    lng: Optional[float] = typer.Option(None, help="Longitude override."),
+    width: Optional[float] = typer.Option(None, help="Width override in meters.")
+):
     """
     Seeds the queue with initial tasks.
     If lat/lng are not provided, tries to geocode the city.
